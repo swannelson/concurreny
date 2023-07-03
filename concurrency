@@ -1,0 +1,89 @@
+package concurrency;
+
+import java.util.Random;
+
+public class concurrency {
+
+public static void main(String[] args)
+
+	{
+		Random r = new Random();
+		int[] z = new int[200000000];
+		for (int i = 0; i < z.length; i++) 
+		{
+			z[i] = r.nextInt(10) + 1;
+		}
+
+		long singleThread = System.currentTimeMillis();
+		System.out.println("Sum for Single is " + sums.sum(z));
+		System.out.println("Single Thread Time is " + (System.currentTimeMillis() - singleThread));
+		singleThread = System.currentTimeMillis();
+		System.out.println("Sum for Parallel is " + sums.paraSum(z));
+		System.out.println("Parallel Thread Time is " + (System.currentTimeMillis() - singleThread));
+	}
+}
+class sums extends Thread {
+	private int[] z;
+	private int length, height, para;
+	public sums(int[] z, int length, int height)
+		{
+			this.z = z;
+			this.length = length;
+			this.height = Math.min(height, z.length);
+		}
+
+	public int getSum()
+		{
+			return para;
+		}
+
+	public void run()
+		{
+			para = sum(z, length, height);
+		}
+
+	public static int sum(int[] z)
+		{
+				return sum(z, 0, z.length);
+		}
+
+	public static int sum(int[] z, int length, int height)
+		{
+			int tot = 0;
+			for (int i = length; i < height; i++) 
+				{
+					tot += z[i];
+				}
+			return tot;
+		}
+	public static int paraSum(int[] z)
+		{
+				return paraSum(z, Runtime.getRuntime().availableProcessors());
+		}
+
+	public static int paraSum(int[] z, int time)
+		{
+			int size = (int) Math.ceil(z.length * 1.0 / time);
+			sums[] sums = new sums[time];
+			for (int i = 0; i < time; i++) 
+				{
+					sums[i] = new sums(z, i * size, (i + 1) * size);
+						sums[i].start();
+				}
+			try 
+				{
+					for (sums sum : sums) 
+					{
+						sum.join();
+					}
+				} 
+			catch (InterruptedException e) { }
+			int tot = 0;
+			for (sums sum : sums) 
+				{
+					tot += sum.getSum();
+				}
+			return tot;
+		}
+	}
+
